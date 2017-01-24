@@ -1,3 +1,12 @@
+//#![deny(warnings)]
+extern crate hyper;
+extern crate env_logger;
+
+use std::thread::spawn;
+
+mod bmos_server;
+
 fn main() {
-    println!("Hello, world!");
+
+    spawn(bmos_server::serve);
 }
