@@ -18,6 +18,15 @@ impl Service for Echo {
     type Error = hyper::Error;
     type Future = ::futures::Finished<Response, hyper::Error>;
 
+
+//sensor - put and post
+//sensor_data
+
+
+//{ |request, mut response|
+//    response.origin.headers_mut().set(Location("https://...".into()));
+//    (StatusCode::TemporaryRedirect, "")
+
     fn call(&self, req: Request) -> Self::Future {
         ::futures::finished(match (req.method(), req.path()) {
             (&Get, "/") | (&Get, "/echo") => {
