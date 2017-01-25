@@ -8,3 +8,4 @@ hyper = "0.9.6"
 pretty_env_logger = "0.1.0"
 getopts = "0.2"
 env_logger = "0.4.0"
+mio = { git = "https://github.com/carllerche/mio" }
