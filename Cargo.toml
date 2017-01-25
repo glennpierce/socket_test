@@ -5,7 +5,19 @@ authors = ["Glenn Pierce <glenn.pierce@carnegosystems.com>"]
 
 [dependencies]
 hyper = "0.9.6"
+byteorder = "0.3"
 pretty_env_logger = "0.1.0"
 getopts = "0.2"
 env_logger = "0.4.0"
+log = "0.3.1"
+slab = "0.3.0"
 mio = { git = "https://github.com/carllerche/mio" }
+
+
+[[bin]]
+name = "bmosserver"
+path = "src/main.rs"
+
+[[bin]]
+name = "bmosclient"
+path = "src/bmos_client.rs"
