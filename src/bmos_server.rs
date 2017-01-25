@@ -34,7 +34,7 @@ impl Server {
 
             // SERVER is Token(1), so start after that
             // we can deal with a max of 126 connections
-            conns: Slab::with_capacity(128),
+            conns: Slab::with_capacity(512),
 
             // list of events from the poller that the server needs to process
             events: Events::with_capacity(1024),
@@ -51,7 +51,9 @@ impl Server {
 
             let mut i = 0;
 
-            trace!("processing events... cnt={}; len={}", cnt, self.events.len());
+            trace!("processing events... cnt={}; len={}",
+                   cnt,
+                   self.events.len());
 
             // Iterate over the notifications. Each event provides the token
             // it was registered with (which usually represents, at least, the
@@ -77,15 +79,11 @@ impl Server {
     ///
     /// This keeps the registration details neatly tucked away inside of our implementation.
     pub fn register(&mut self, poll: &mut Poll) -> io::Result<()> {
-        poll.register(
-            &self.sock,
-            self.token,
-            Ready::readable(),
-            PollOpt::edge()
-        ).or_else(|e| {
-            error!("Failed to register server {:?}, {:?}", self.token, e);
-            Err(e)
-        })
+        poll.register(&self.sock, self.token, Ready::readable(), PollOpt::edge())
+            .or_else(|e| {
+                error!("Failed to register server {:?}, {:?}", self.token, e);
+                Err(e)
+            })
     }
 
     fn tick(&mut self, poll: &mut Poll) {
@@ -214,9 +212,11 @@ impl Server {
             };
 
             match self.find_connection_by_token(token).register(poll) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
-                    error!("Failed to register {:?} connection with poller, {:?}", token, e);
+                    error!("Failed to register {:?} connection with poller, {:?}",
+                           token,
+                           e);
                     self.conns.remove(token);
                 }
             }

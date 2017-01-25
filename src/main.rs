@@ -1,13 +1,19 @@
 //TODO
 //spawn(bmos_http_server::serve);
 
+extern crate clap;
 extern crate hyper;
 extern crate env_logger;
 extern crate byteorder;
 extern crate mio;
 extern crate slab;
-#[macro_use] extern crate log;
+extern crate rustc_serialize;
+extern crate toml;
+//extern crate postgres;
+#[macro_use]
+extern crate log;
 
+mod bmos_config;
 mod bmos_server;
 mod bmos_connection;
 
@@ -18,6 +24,9 @@ use mio::tcp::*;
 
 use bmos_server::*;
 
+use clap::{Arg, App};
+
+
 fn main() {
 
     // Before doing anything, let us register a logger. The mio library has really good logging
@@ -25,7 +34,44 @@ fn main() {
     // figure out why something is not working correctly.
     env_logger::init().expect("Failed to init logger");
 
-    let addr = "127.0.0.1:8000".parse::<SocketAddr>()
+    // Pull some optional arguments off the commandline
+    // let matches = App::new("cormorant")
+    //                       .version("0.1")
+    //                       .author("Zachary Tong <zacharyjtong@gmail.com>")
+    //                       .about("Toy Distributed Key:Value Store")
+    //                       .arg(Arg::with_name("CONFIG")
+    //                            .short("c")
+    //                            .long("config")
+    //                            .help("Path to the config.toml")
+    //                            .takes_value(true))
+    //                       .arg(Arg::with_name("THREADS")
+    //                            .short("t")
+    //                            .long("threads")
+    //                            .help("Configures the number of threads")
+    //                            .takes_value(true))
+    //                       .get_matches();
+
+/*
+// Default to 4 threads unless specified
+    let threads: usize = matches.value_of("threads").unwrap_or("4").parse().unwrap();
+
+    // Config is located in same directory as `config.toml` unless specified
+    let path: String = matches.value_of("config").unwrap_or("config.toml").parse().unwrap();
+
+    // We place the deserialized Config into an Arc, so that we can share it between
+    // multiple threads in the future.  It will be immutable and not a problem to share
+    let config = Arc::new(RwLock::new(Config::parse(path)));
+    let state = Arc::new(RwLock::new(State::new()));
+
+    {
+        info!("Starting server \"{}\" [{}]",
+            &config.read().unwrap().node.name, state.read().unwrap().node_id.to_hyphenated_string());
+    }
+*/
+
+
+    let addr = "127.0.0.1:8000"
+        .parse::<SocketAddr>()
         .expect("Failed to parse host:port string");
     let sock = TcpListener::bind(&addr).expect("Failed to bind address");
 
