@@ -231,17 +231,25 @@ impl Server {
     fn readable(&mut self, token: Token) -> io::Result<()> {
         debug!("server conn readable; token={:?}", token);
 
-        while let Some(message) = try!(self.find_connection_by_token(token).readable()) {
+        let c = self.find_connection_by_token(token);
+        while let Some(message) = try!(c.readable()) {
 
             let rc_message = Rc::new(message);
-            // Queue up a write for all connected clients.
-            for c in self.conns.iter_mut() {
-                c.send_message(rc_message.clone())
+
+            c.send_message(rc_message.clone())
                     .unwrap_or_else(|e| {
                         error!("Failed to queue message for {:?}: {:?}", c.token, e);
                         c.mark_reset();
                     });
-            }
+
+            // Queue up a write for all connected clients.
+            // for c in self.conns.iter_mut() {
+            //     c.send_message(rc_message.clone())
+            //         .unwrap_or_else(|e| {
+            //             error!("Failed to queue message for {:?}: {:?}", c.token, e);
+            //             c.mark_reset();
+            //         });
+            // }
         }
 
         Ok(())
