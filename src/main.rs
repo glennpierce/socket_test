@@ -1,23 +1,30 @@
 //TODO
 //spawn(bmos_http_server::serve);
 
-extern crate clap;
+extern crate futures;
 extern crate hyper;
-extern crate env_logger;
+extern crate pretty_env_logger;
+extern crate clap;
 extern crate byteorder;
 extern crate mio;
 extern crate slab;
 extern crate rustc_serialize;
 extern crate toml;
-//extern crate postgres;
+extern crate postgres;
+extern crate time;
+extern crate rusqlite;
 #[macro_use]
 extern crate log;
 
 mod bmos_config;
 mod bmos_server;
+mod bmos_http_server;
 mod bmos_connection;
+mod bmos_storage;
+mod bmos_storage_sqlite;
 
 use std::net::SocketAddr;
+use std::thread;
 
 use mio::*;
 use mio::tcp::*;
@@ -32,7 +39,7 @@ fn main() {
     // Before doing anything, let us register a logger. The mio library has really good logging
     // at the _trace_ and _debug_ levels. Having a logger setup is invaluable when trying to
     // figure out why something is not working correctly.
-    env_logger::init().expect("Failed to init logger");
+    pretty_env_logger::init().expect("Failed to init logger");
 
     // Pull some optional arguments off the commandline
     // let matches = App::new("cormorant")
@@ -51,7 +58,7 @@ fn main() {
     //                            .takes_value(true))
     //                       .get_matches();
 
-/*
+    /*
 // Default to 4 threads unless specified
     let threads: usize = matches.value_of("threads").unwrap_or("4").parse().unwrap();
 
@@ -69,6 +76,8 @@ fn main() {
     }
 */
 
+
+    std::thread::spawn(bmos_http_server::serve);
 
     let addr = "127.0.0.1:8000"
         .parse::<SocketAddr>()

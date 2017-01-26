@@ -237,10 +237,10 @@ impl Server {
             let rc_message = Rc::new(message);
 
             c.send_message(rc_message.clone())
-                    .unwrap_or_else(|e| {
-                        error!("Failed to queue message for {:?}: {:?}", c.token, e);
-                        c.mark_reset();
-                    });
+                .unwrap_or_else(|e| {
+                    error!("Failed to queue message for {:?}: {:?}", c.token, e);
+                    c.mark_reset();
+                });
 
             // Queue up a write for all connected clients.
             // for c in self.conns.iter_mut() {

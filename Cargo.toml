@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["Glenn Pierce <glenn.pierce@carnegosystems.com>"]
 
 [dependencies]
-hyper = "0.9.6"
+time = "0.1.36"
+futures = "0.1.9"
+hyper = { git = "https://github.com/hyperium/hyper.git" } 
 byteorder = "0.3"
 pretty_env_logger = "0.1.0"
 getopts = "0.2"
@@ -16,6 +18,7 @@ rustc-serialize = "0.3"
 toml = "*"
 clap = "1.2.5"
 postgres = "0.13"
+rusqlite = { git = "https://github.com/jgallagher/rusqlite.git" }
 
 [[bin]]
 name = "bmosserver"

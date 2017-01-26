@@ -1,56 +1,72 @@
-use postgres::{Connection, TlsMode};
+use bmos_storage::{BmosStorage, BmosStorageResult, BmosStorageError};
 
-struct Person {
-    id: i32,
-    name: String,
-    data: Option<Vec<u8>>,
+use std::io;
+use std::error::Error;
+use std::convert::From;
+use time::Timespec;
+
+use rusqlite;
+use rusqlite::{Connection};
+
+
+struct BmosSqliteStorage {
+    conn : Connection,
+}
+
+impl From<rusqlite::Error> for BmosStorageError {
+    fn from(val : rusqlite::Error) -> Self {
+        BmosStorageError{
+            detail : val.description().to_owned(),
+        }
+    }
+}
+
+impl BmosSqliteStorage {
+    pub fn new(&self) -> BmosSqliteStorage {
+        BmosSqliteStorage{
+            conn : Connection::open_in_memory().unwrap(),
+        }
+    }
+}
+
+impl BmosStorage for BmosSqliteStorage {
+
+    fn create_sensors_table(&self) -> BmosStorageResult<()> {
+  
+        //let mut conn = &self.conn;
+
+        self.conn.execute("CREATE TABLE sensors (
+                    id              SERIAL PRIMARY KEY,
+                    name            VARCHAR(100) NOT NULL,
+                    namespace       VARCHAR(500) NOT NULL,
+                    description     VARCHAR(200) NOT NULL,
+                    time_created    TIMESTAMP NOT NULL,
+                    last_timestamp  TIMESTAMP DEFAULT '1970-01-01 00:00:00.000',
+                    first_timestamp TIMESTAMP DEFAULT '1970-01-01 00:00:00.000',
+                    max_meter_value INTEGER DEFAULT 9999,
+                    type_id         INTEGER DEFAULT 1,
+                    unit_id         INTEGER DEFAULT 1,
+                    resolution      REAL DEFAULT 0.0,
+                    accuracy        REAL DEFAULT 0.0,
+                    kw_calibration_factor REAL DEFAULT 1.0 NOT NULL,
+                    sample_interval INTEGER DEFAULT 300 NOT NULL,
+                    ever_increasing INTEGER DEFAULT 0,
+                )", &[]).unwrap();
+
+        Ok(())
+    }
 }
 
 
-trait BmosStorage {
-    fn create_sensors_table(&self);
-}
+// FOREIGN KEY(trackartist) REFERENCES artist(artistid)
 
 /*
 
 
 CREATE TABLE sensors (
-    id SERIAL PRIMARY KEY,
-    name character varying(200) NOT NULL,
-    description character varying(150),
-    lhs integer NOT NULL DEFAULT 0,
-    rhs integer NOT NULL DEFAULT 0,
-    parent integer NOT NULL DEFAULT 0,
-    namespace character varying(500),
-    owner_id integer NOT NULL DEFAULT 1,
-    placement character varying(200) DEFAULT '',
-    max_meter_value integer DEFAULT 9999,
-    site_id integer,
-    building_id integer,
-    subarea_id integer,
-    type_id smallint DEFAULT 1,
-    unit_id smallint DEFAULT 1,
-    resolution real DEFAULT 0.0,
-    accuracy real DEFAULT 0.0,
-    kw_calibration_factor double precision DEFAULT 1.0 NOT NULL,
-    sample_interval integer DEFAULT 300 NOT NULL,
-    virtual bool DEFAULT 'f' NOT NULL,
-    additional_info hstore,
-    action_info hstore,
-    value_type_id integer,
-    location character varying(500),
-    last_timestamp timestamp with time zone NOT NULL DEFAULT '01/01/1970 00:00:00.000 UTC',
-    first_timestamp timestamp with time zone NOT NULL DEFAULT '01/01/1970 00:00:00.000 UTC',
-    first_cleaned_timestamp timestamp with time zone NOT NULL DEFAULT '01/01/1970 00:00:00.000 UTC',
-    last_cleaned_timestamp timestamp with time zone NOT NULL DEFAULT '01/01/1970 00:00:00.000 UTC',
-    sensor_value_count bigint DEFAULT 0 NOT NULL,
-    sensor_values_sum double precision DEFAULT 0.0 NOT NULL,
-    sensor_values_sum_squares double precision DEFAULT 0.0 NOT NULL,
-    ever_increasing boolean NOT NULL DEFAULT false,
-    status sensor_status NOT NULL default 'active',
-    FOREIGN KEY (site_id) REFERENCES sites(id),
-    FOREIGN KEY (building_id) REFERENCES buildings(id),
-    FOREIGN KEY (subarea_id) REFERENCES subareas(id),
+
+
+
     FOREIGN KEY (type_id) REFERENCES sensor_value_types(id),
     FOREIGN KEY (unit_id) REFERENCES sensor_value_units(id),
     FOREIGN KEY (owner_id) REFERENCES users(id)
@@ -199,7 +215,7 @@ BEFORE INSERT ON %s
 
 
 
-
+/*
 
 fn main() {
     let conn = Connection::connect("postgres://postgres@localhost", TlsMode::None).unwrap();
@@ -224,3 +240,5 @@ fn main() {
         println!("Found person {}", person.name);
     }
 }
+
+*/

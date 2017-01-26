@@ -1,48 +1,57 @@
-use std::io::copy;
-
-use env_logger;
+use pretty_env_logger;
 
 use hyper;
-use hyper::{Get, Post};
-use hyper::server::{Server, Request, Response};
-use hyper::uri::RequestUri::AbsolutePath;
+use hyper::{Url, Get, Post, StatusCode};
+use hyper::header::ContentLength;
+use hyper::server::{Http, Service, Request, Response};
 
-macro_rules! try_return(
-    ($e:expr) => {{
-        match $e {
-            Ok(v) => v,
-            Err(e) => { println!("Error: {}", e); return; }
-        }
-    }}
-);
 
-fn echo(mut req: Request, mut res: Response) {
-    match req.uri {
-        AbsolutePath(ref path) => {
-            match (&req.method, &path[..]) {
-                (&Get, "/") | (&Get, "/echo") => {
-                    try_return!(res.send(b"Try POST /echo"));
-                    return;
-                }
-                (&Post, "/echo") => (), // fall through, fighting mutable borrows
-                _ => {
-                    *res.status_mut() = hyper::NotFound;
-                    return;
-                }
+
+static INDEX: &'static [u8] = b"Try POST /echo";
+
+#[derive(Clone, Copy)]
+struct Echo;
+
+#[derive(Clone, Copy)]
+struct Sensor;
+
+impl Service for Echo {
+    type Request = Request;
+    type Response = Response;
+    type Error = hyper::Error;
+    type Future = ::futures::Finished<Response, hyper::Error>;
+
+    fn call(&self, req: Request) -> Self::Future {
+        ::futures::finished(match (req.method(), req.path()) {
+            (&Get, "/") | (&Get, "/echo") => {
+
+                //let mut path_segments = url.path_segments().unwrap();
+
+                let query = req.uri();
+                //let url = Url::parse(&query.to_string()).unwrap();
+                println!("{}", query);
+
+                Response::new()
+                    .with_header(ContentLength(INDEX.len() as u64))
+                    .with_body(INDEX)
             }
-        }
-        _ => {
-            return;
-        }
-    };
-
-    let mut res = try_return!(res.start());
-    try_return!(copy(&mut req, &mut res));
+            (&Post, "/echo") => {
+                let mut res = Response::new();
+                if let Some(len) = req.headers().get::<ContentLength>() {
+                    res.headers_mut().set(len.clone());
+                }
+                res.with_body(req.body())
+            }
+            _ => Response::new().with_status(StatusCode::NotFound),
+        })
+    }
 }
 
 pub fn serve() {
-    env_logger::init().unwrap();
-    let server = Server::http("127.0.0.1:1337").unwrap();
-    let _guard = server.handle(echo);
-    println!("Listening on http://127.0.0.1:1337");
+    //pretty_env_logger::init().unwrap();
+    let addr = "127.0.0.1:1337".parse().unwrap();
+
+    let server = Http::new().bind(&addr, || Ok(Echo)).unwrap();
+    println!("Listening on http://{}", server.local_addr().unwrap());
+    server.run().unwrap();
 }
