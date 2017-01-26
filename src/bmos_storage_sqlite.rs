@@ -6,36 +6,32 @@ use std::convert::From;
 use time::Timespec;
 
 use rusqlite;
-use rusqlite::{Connection};
+use rusqlite::Connection;
 
 
 struct BmosSqliteStorage {
-    conn : Connection,
+    conn: Connection,
 }
 
 impl From<rusqlite::Error> for BmosStorageError {
-    fn from(val : rusqlite::Error) -> Self {
-        BmosStorageError{
-            detail : val.description().to_owned(),
-        }
+    fn from(val: rusqlite::Error) -> Self {
+        BmosStorageError { detail: val.description().to_owned() }
     }
 }
 
 impl BmosSqliteStorage {
     pub fn new(&self) -> BmosSqliteStorage {
-        BmosSqliteStorage{
-            conn : Connection::open_in_memory().unwrap(),
-        }
+        BmosSqliteStorage { conn: Connection::open_in_memory().unwrap() }
     }
 }
 
 impl BmosStorage for BmosSqliteStorage {
-
     fn create_sensors_table(&self) -> BmosStorageResult<()> {
-  
-        //let mut conn = &self.conn;
 
-        self.conn.execute("CREATE TABLE sensors (
+        //No need to check this exists as the table is in memory only.
+
+        self.conn
+            .execute("CREATE TABLE sensors (
                     id              SERIAL PRIMARY KEY,
                     name            VARCHAR(100) NOT NULL,
                     namespace       VARCHAR(500) NOT NULL,
@@ -51,14 +47,132 @@ impl BmosStorage for BmosSqliteStorage {
                     kw_calibration_factor REAL DEFAULT 1.0 NOT NULL,
                     sample_interval INTEGER DEFAULT 300 NOT NULL,
                     ever_increasing INTEGER DEFAULT 0,
-                )", &[]).unwrap();
+                )",
+                     &[])
+            .unwrap();
 
+        Ok(())
+    }
+
+    fn create_types_and_units(&self) -> BmosStorageResult<()> {
+        self.conn
+            .execute("CREATE TABLE sensor_value_types (
+                    id              SERIAL PRIMARY KEY,
+                    name            VARCHAR(100) UNIQUE
+                )",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_types (name) VALUES ('Temperature')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_types (name) VALUES ('Humidity')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_types (name) VALUES ('Carbon dioxide')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_types (name) VALUES ('Litre')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_types (name) VALUES ('SolarIncidience')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_types (name) VALUES ('Electrical')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_types (name) VALUES ('HeatFlow')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("CREATE TABLE sensor_value_units (
+                    id              SERIAL PRIMARY KEY,
+                    name            VARCHAR(100) UNIQUE,
+                    description     VARCHAR(200)
+                )",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius')",
+                     &[])
+            .unwrap();
+
+        self.conn
+            .execute("INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius')",
+                     &[])
+            .unwrap();
+            
         Ok(())
     }
 }
 
 
 // FOREIGN KEY(trackartist) REFERENCES artist(artistid)
+
+
+/*
+
+
+
+
+CREATE TABLE sensor_value_units (
+    id SERIAL PRIMARY KEY,
+    name character varying(50) UNIQUE,
+    description character varying(200)
+);
+
+ALTER TABLE sensor_value_units OWNER TO bmos;
+INSERT INTO sensor_value_units (name, description) VALUES ('C', 'Celsius');
+INSERT INTO sensor_value_units (name, description) VALUES ('%RH', 'Relative Humidity Percentage');
+INSERT INTO sensor_value_units (name, description) VALUES ('PPM', 'Parts Per Million');
+INSERT INTO sensor_value_units (name, description) VALUES ('L', 'Litres');
+INSERT INTO sensor_value_units (name, description) VALUES ('W^m2', 'Watts per metre squared');
+INSERT INTO sensor_value_units (name, description) VALUES ('kW', 'Kilowatts');
+INSERT INTO sensor_value_units (name, description) VALUES ('W', 'Watts');
+INSERT INTO sensor_value_units (name, description) VALUES ('kWh', 'Kilowatt Hours');
+
+
+*/
 
 /*
 

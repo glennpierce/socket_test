@@ -16,4 +16,5 @@ pub trait BmosStorage {
     //fn get_connection(&self) -> BmosStorageConnection;
     //fn new(&self) -> BmosStorage;
     fn create_sensors_table(&self) -> BmosStorageResult<()>;
+    fn create_types_and_units(&self) -> BmosStorageResult<()>;
 }
