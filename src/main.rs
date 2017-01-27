@@ -12,10 +12,12 @@ extern crate rustc_serialize;
 extern crate toml;
 extern crate postgres;
 extern crate time;
+extern crate chrono;
 extern crate rusqlite;
 #[macro_use]
 extern crate log;
 
+mod bmos_time;
 mod bmos_config;
 mod bmos_server;
 mod bmos_http_server;
@@ -23,6 +25,7 @@ mod bmos_connection;
 mod bmos_storage;
 mod bmos_storage_sqlite;
 
+use bmos_storage::BmosStorage;
 use std::net::SocketAddr;
 use std::thread;
 
@@ -40,6 +43,11 @@ fn main() {
     // at the _trace_ and _debug_ levels. Having a logger setup is invaluable when trying to
     // figure out why something is not working correctly.
     pretty_env_logger::init().expect("Failed to init logger");
+
+    // Create the storage for values. For development this is sqlite in memory
+    // Eventually it will be postgres
+    let storage = bmos_storage_sqlite::BmosSqliteStorage::new();
+    storage.create_tables().unwrap();
 
     // Pull some optional arguments off the commandline
     // let matches = App::new("cormorant")
@@ -91,6 +99,6 @@ fn main() {
     // the details of how registering works inside of the `Server` object. One reason I
     // really like this is to get around having to have `const SERVER = Token(0)` at the top of my
     // file. It also keeps our polling options inside `Server`.
-    let mut server = Server::new(sock);
+    let mut server = BmosTcpServer::new(sock, &storage);
     server.run(&mut poll).expect("Failed to run server");
 }

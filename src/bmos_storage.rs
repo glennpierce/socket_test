@@ -1,9 +1,4 @@
-// struct Person {
-//     id: i32,
-//     name: String,
-//     data: Option<Vec<u8>>,
-// }
-
+#[derive(Debug)]
 pub struct BmosStorageError {
     pub detail: String,
 }
@@ -15,6 +10,5 @@ pub type BmosStorageResult<T> = Result<T, BmosStorageError>;
 pub trait BmosStorage {
     //fn get_connection(&self) -> BmosStorageConnection;
     //fn new(&self) -> BmosStorage;
-    fn create_sensors_table(&self) -> BmosStorageResult<()>;
-    fn create_types_and_units(&self) -> BmosStorageResult<()>;
+    fn create_tables(&self) -> BmosStorageResult<()>;
 }

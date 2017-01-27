@@ -6,37 +6,43 @@ use mio::tcp::*;
 use slab;
 
 use bmos_connection::Connection;
+use bmos_storage::BmosStorage;
 
 type Slab<T> = slab::Slab<T, Token>;
 
-pub struct Server {
-    // main socket for our server
+pub struct BmosTcpServer<'a> {
+
+    storage: &'a BmosStorage,   // How the values are stored to disk
+
+    // main socket for our BmosTcpserver
     sock: TcpListener,
 
-    // token of our server. we keep track of it here instead of doing `const SERVER = Token(0)`.
+    // token of our BmosTcpserver. we keep track of it here instead of doing `const BmosTcpSERVER = Token(0)`.
     token: Token,
 
-    // a list of connections _accepted_ by our server
+    // a list of connections _accepted_ by our BmosTcpserver
     conns: Slab<Connection>,
 
     // a list of events to process
     events: Events,
 }
 
-impl Server {
-    pub fn new(sock: TcpListener) -> Server {
-        Server {
+impl<'a> BmosTcpServer<'a> {
+    pub fn new(sock: TcpListener, storage: &BmosStorage) -> BmosTcpServer {
+        BmosTcpServer {
+            storage: storage,
+
             sock: sock,
 
-            // Give our server token a number much larger than our slab capacity. The slab used to
+            // Give our BmosTcpserver token a number much larger than our slab capacity. The slab used to
             // track an internal offset, but does not anymore.
             token: Token(10_000_000),
 
-            // SERVER is Token(1), so start after that
+            // BmosTcpSERVER is Token(1), so start after that
             // we can deal with a max of 126 connections
             conns: Slab::with_capacity(512),
 
-            // list of events from the poller that the server needs to process
+            // list of events from the poller that the BmosTcpserver needs to process
             events: Events::with_capacity(1024),
         }
     }
@@ -45,7 +51,7 @@ impl Server {
 
         try!(self.register(poll));
 
-        info!("Server run loop starting...");
+        info!("BmosTcpServer run loop starting...");
         loop {
             let cnt = try!(poll.poll(&mut self.events, None));
 
@@ -75,13 +81,13 @@ impl Server {
         }
     }
 
-    /// Register Server with the poller.
+    /// Register BmosTcpServer with the poller.
     ///
     /// This keeps the registration details neatly tucked away inside of our implementation.
     pub fn register(&mut self, poll: &mut Poll) -> io::Result<()> {
         poll.register(&self.sock, self.token, Ready::readable(), PollOpt::edge())
             .or_else(|e| {
-                error!("Failed to register server {:?}, {:?}", self.token, e);
+                error!("Failed to register BmosTcpserver {:?}, {:?}", self.token, e);
                 Err(e)
             })
     }
@@ -131,11 +137,11 @@ impl Server {
             return;
         }
 
-        // We never expect a write event for our `Server` token . A write event for any other token
+        // We never expect a write event for our `BmosTcpServer` token . A write event for any other token
         // should be handed off to that connection.
         if event.is_writable() {
             trace!("Write event for {:?}", token);
-            assert!(self.token != token, "Received writable event for Server");
+            assert!(self.token != token, "Received writable event for BmosTcpServer");
 
             let conn = self.find_connection_by_token(token);
 
@@ -151,7 +157,7 @@ impl Server {
                 });
         }
 
-        // A read event for our `Server` token means we are establishing a new connection. A read
+        // A read event for our `BmosTcpServer` token means we are establishing a new connection. A read
         // event for any other token should be handed off to that connection.
         if event.is_readable() {
             trace!("Read event for {:?}", token);
@@ -179,14 +185,14 @@ impl Server {
 
     /// Accept a _new_ client connection.
     ///
-    /// The server will keep track of the new connection and forward any events from the poller
+    /// The BmosTcpserver will keep track of the new connection and forward any events from the poller
     /// to this connection.
     fn accept(&mut self, poll: &mut Poll) {
-        debug!("server accepting new socket");
+        debug!("BmosTcpserver accepting new socket");
 
         loop {
             // Log an error if there is no socket, but otherwise move on so we do not tear down the
-            // entire server.
+            // entire BmosTcpserver.
             let sock = match self.sock.accept() {
                 Ok((sock, _)) => sock,
                 Err(e) => {
@@ -229,7 +235,7 @@ impl Server {
     /// finished, push the receive buffer into the all the existing connections so we can
     /// broadcast.
     fn readable(&mut self, token: Token) -> io::Result<()> {
-        debug!("server conn readable; token={:?}", token);
+        debug!("BmosTcpserver conn readable; token={:?}", token);
 
         let c = self.find_connection_by_token(token);
         while let Some(message) = try!(c.readable()) {

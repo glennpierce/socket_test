@@ -5,6 +5,7 @@ authors = ["Glenn Pierce <glenn.pierce@carnegosystems.com>"]
 
 [dependencies]
 time = "0.1.36"
+chrono = "0.2"
 futures = "0.1.9"
 hyper = { git = "https://github.com/hyperium/hyper.git" } 
 byteorder = "0.3"
