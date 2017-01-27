@@ -17,7 +17,8 @@ extern crate rusqlite;
 #[macro_use]
 extern crate log;
 
-mod bmos_time;
+//mod bmos_time;
+mod bmos_sensor;
 mod bmos_config;
 mod bmos_server;
 mod bmos_http_server;
@@ -32,10 +33,12 @@ use std::thread;
 use mio::*;
 use mio::tcp::*;
 
+use bmos_sensor::BmosTimeConverter;
 use bmos_server::*;
 
 use clap::{Arg, App};
 
+use chrono::{NaiveDateTime, ParseResult, ParseError};
 
 fn main() {
 
@@ -43,6 +46,29 @@ fn main() {
     // at the _trace_ and _debug_ levels. Having a logger setup is invaluable when trying to
     // figure out why something is not working correctly.
     pretty_env_logger::init().expect("Failed to init logger");
+
+
+    // let date_str = "2013-02-14 15:41:07";
+    // let date = NaiveDateTime::parse_from_str(&date_str, "%Y-%m-%d %H:%M:%S");
+    // match date {
+    //     Ok(v) => println!("{:?}", v),
+    //     //Err(NotEnough) => println!("{}", "ddd"),
+    //     Err(NotEnough) => break,
+    //     Err(e) => println!("{:?}", e)
+    // }
+
+    //let date_str = "2013-02-14 15:41:07";
+    //let date = NaiveDateTime::parse_from_str(&date_str, "%Y-%m-%d %H:%M:%S").unwrap();
+    let date = NaiveDateTime::from_bmos_time_string("1485547437.987534").unwrap();
+
+    println!("{:?}", date);
+
+    // match date {
+    //     Ok(v) => println!("{:?}", v),
+    //     Err(e) => println!("{:?}", e)
+    // }
+
+
 
     // Create the storage for values. For development this is sqlite in memory
     // Eventually it will be postgres
