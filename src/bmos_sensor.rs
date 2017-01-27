@@ -22,7 +22,7 @@ impl From<std::num::ParseIntError> for BmosTimeError {
 
 type Result<T> = result::Result<T, BmosTimeError>;
 
-pub trait BmosTimeConverter { 
+pub trait BmosTimeConverter {
     fn from_bmos_time_string(&str) -> Result<NaiveDateTime>;
 }
 
@@ -36,16 +36,15 @@ pub trait BmosTimeConverter {
 /// let date = NaiveDateTime::from_bmos_time_string("1485547437.987534").unwrap();
 /// println!("{:?}", date);
 /// ```
-impl BmosTimeConverter for NaiveDateTime { 
-
-    fn from_bmos_time_string(s : &str) -> Result<NaiveDateTime> { 
+impl BmosTimeConverter for NaiveDateTime {
+    fn from_bmos_time_string(s: &str) -> Result<NaiveDateTime> {
         let len = s.chars().count();
-   
+
         if len != 17 {
-             return Err(BmosTimeError::INVALID_BMOS_TIME_STRING);
+            return Err(BmosTimeError::INVALID_BMOS_TIME_STRING);
         }
 
-        let parts : Vec<&str> = s.split('.').collect();
+        let parts: Vec<&str> = s.split('.').collect();
 
         if parts.len() != 2 {
             return Err(BmosTimeError::INVALID_BMOS_TIME_STRING);
@@ -53,8 +52,8 @@ impl BmosTimeConverter for NaiveDateTime {
 
         let timestamp = try!(parts[0].parse::<i64>());
         let microseconds = try!(parts[1].parse::<u32>());
-        
-        return Ok(NaiveDateTime::from_timestamp(timestamp, microseconds*1000));
+
+        return Ok(NaiveDateTime::from_timestamp(timestamp, microseconds * 1000));
     }
 }
 

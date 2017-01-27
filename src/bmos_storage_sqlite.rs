@@ -112,7 +112,7 @@ impl BmosSqliteStorage {
             .execute("INSERT INTO sensor_value_units (name, description) VALUES ('kWh', 'Kilowatt Hours')",
                      &[])
             .unwrap();
-            
+
         Ok(())
     }
 
@@ -132,7 +132,6 @@ impl BmosSqliteStorage {
 }
 
 impl BmosStorage for BmosSqliteStorage {
-
     fn create_tables(&self) -> BmosStorageResult<()> {
 
         //No need to check this exists as the table is in memory only.
@@ -164,5 +163,5 @@ impl BmosStorage for BmosSqliteStorage {
         self.create_sensor_value_table();
 
         Ok(())
-    }    
+    }
 }

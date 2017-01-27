@@ -17,7 +17,6 @@ extern crate rusqlite;
 #[macro_use]
 extern crate log;
 
-//mod bmos_time;
 mod bmos_sensor;
 mod bmos_config;
 mod bmos_server;

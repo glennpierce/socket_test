@@ -11,8 +11,7 @@ use bmos_storage::BmosStorage;
 type Slab<T> = slab::Slab<T, Token>;
 
 pub struct BmosTcpServer<'a> {
-
-    storage: &'a BmosStorage,   // How the values are stored to disk
+    storage: &'a BmosStorage, // How the values are stored to disk
 
     // main socket for our BmosTcpserver
     sock: TcpListener,
@@ -141,7 +140,8 @@ impl<'a> BmosTcpServer<'a> {
         // should be handed off to that connection.
         if event.is_writable() {
             trace!("Write event for {:?}", token);
-            assert!(self.token != token, "Received writable event for BmosTcpServer");
+            assert!(self.token != token,
+                    "Received writable event for BmosTcpServer");
 
             let conn = self.find_connection_by_token(token);
 
