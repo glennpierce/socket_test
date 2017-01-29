@@ -57,10 +57,37 @@ fn main() {
     // figure out why something is not working correctly.
     pretty_env_logger::init().expect("Failed to init logger");
 
+    // Pull some optional arguments off the commandline
+    let matches = App::new("bmosserver")
+                          .version("0.1")
+                          .author("Glenn Pierce <glennpierce@gmail.com>")
+                          .about("Bmos sensor data store")
+                          .arg(Arg::with_name("slave")
+                               .short("s")
+                               .long("slave")
+                               //.index(1)
+                               .help("Is this server a slave ?")
+                               .takes_value(false))
+                               //.required(true))
+                    
+                        //   .arg(Arg::with_name("CONFIG")
+                        //        .short("c")
+                        //        .long("config")
+                        //        .help("Path to the config.toml")
+                        //        .takes_value(true))
+                        //   .arg(Arg::with_name("THREADS")
+                        //        .short("t")
+                        //        .long("threads")
+                        //        .help("Configures the number of threads")
+                        //        .takes_value(true))
+                          .get_matches();
 
+    let is_master: bool = if matches.is_present("slave") { false } else { true };
 
+     // Config is located in same directory as `config.toml` unless specified
+    //let is_master: bool = matches.value_of("master").parse().unwrap();
 
-
+    println!("is_master: {}", is_master);
 
     test1();
 
@@ -91,22 +118,7 @@ fn main() {
     let storage = bmos_storage_sqlite::BmosSqliteStorage::new();
     storage.create_tables().unwrap();
 
-    // Pull some optional arguments off the commandline
-    // let matches = App::new("cormorant")
-    //                       .version("0.1")
-    //                       .author("Zachary Tong <zacharyjtong@gmail.com>")
-    //                       .about("Toy Distributed Key:Value Store")
-    //                       .arg(Arg::with_name("CONFIG")
-    //                            .short("c")
-    //                            .long("config")
-    //                            .help("Path to the config.toml")
-    //                            .takes_value(true))
-    //                       .arg(Arg::with_name("THREADS")
-    //                            .short("t")
-    //                            .long("threads")
-    //                            .help("Configures the number of threads")
-    //                            .takes_value(true))
-    //                       .get_matches();
+
 
     /*
 // Default to 4 threads unless specified
