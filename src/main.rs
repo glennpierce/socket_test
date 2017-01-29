@@ -17,6 +17,15 @@ extern crate rusqlite;
 #[macro_use]
 extern crate log;
 
+extern crate bincode;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+
+//extern crate serde_json;
+
+
+
 mod bmos_sensor;
 mod bmos_config;
 mod bmos_server;
@@ -34,10 +43,12 @@ use mio::tcp::*;
 
 use bmos_sensor::BmosTimeConverter;
 use bmos_server::*;
+use bmos_sensor::test1;
 
 use clap::{Arg, App};
 
 use chrono::{NaiveDateTime, ParseResult, ParseError};
+
 
 fn main() {
 
@@ -47,20 +58,26 @@ fn main() {
     pretty_env_logger::init().expect("Failed to init logger");
 
 
-    // let date_str = "2013-02-14 15:41:07";
-    // let date = NaiveDateTime::parse_from_str(&date_str, "%Y-%m-%d %H:%M:%S");
-    // match date {
-    //     Ok(v) => println!("{:?}", v),
-    //     //Err(NotEnough) => println!("{}", "ddd"),
-    //     Err(NotEnough) => break,
-    //     Err(e) => println!("{:?}", e)
-    // }
+
+
+
+
+    test1();
+
+
+
+
+
+
+
+
+
 
     //let date_str = "2013-02-14 15:41:07";
     //let date = NaiveDateTime::parse_from_str(&date_str, "%Y-%m-%d %H:%M:%S").unwrap();
-    let date = NaiveDateTime::from_bmos_time_string("1485547437.987534").unwrap();
+    // let date = NaiveDateTime::from_bmos_time_string("1485547437.987534").unwrap();
 
-    println!("{:?}", date);
+    // println!("{:?}", date);
 
     // match date {
     //     Ok(v) => println!("{:?}", v),

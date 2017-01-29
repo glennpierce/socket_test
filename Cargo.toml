@@ -20,6 +20,9 @@ toml = "*"
 clap = "1.2.5"
 postgres = "0.13"
 rusqlite = { git = "https://github.com/jgallagher/rusqlite.git" }
+bincode = "0.6"
+serde = "0.8"
+serde_derive = "0.8"
 
 [[bin]]
 name = "bmosserver"

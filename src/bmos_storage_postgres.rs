@@ -92,25 +92,6 @@ for y, year in enumerate(years):
         dates.append((start, end, "%s_%sq%d" %(parent_table_name, year, q)))
 
 
-print """
-CREATE FUNCTION plpgsql_call_handler() RETURNS language_handler AS
-'$libdir/plpgsql' LANGUAGE C;
-CREATE TRUSTED LANGUAGE plpgsql
-HANDLER "plpgsql_call_handler";
-GRANT USAGE ON LANGUAGE plpgsql TO bmos;
-"""
-
-print """
-CREATE OR REPLACE FUNCTION daily_quarter_trunc(ts TIMESTAMPTZ)
-  RETURNS TEXT
-AS $$
-BEGIN
-  return ts::date + interval '6 hour' * (date_part('hour', ts)::integer / 6);
-END;
-$$LANGUAGE plpgsql
-IMMUTABLE;
-"""
-
 
 
 
