@@ -1,3 +1,7 @@
+//! This module does stuff.
+//!
+//! It does this really well
+
 use std::io::{self, ErrorKind};
 use std::rc::Rc;
 

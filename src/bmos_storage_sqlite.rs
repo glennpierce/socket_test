@@ -5,9 +5,13 @@ use std::error::Error;
 use std::convert::From;
 use time::Timespec;
 
+use chrono;
+use chrono::{NaiveDateTime, ParseResult, ParseError};
+
 use rusqlite;
 use rusqlite::Connection;
 
+use bmos_sensor::SensorValueArray;
 
 #[derive(Debug)]
 pub struct BmosSqliteStorage {
@@ -16,9 +20,10 @@ pub struct BmosSqliteStorage {
 
 impl From<rusqlite::Error> for BmosStorageError {
     fn from(val: rusqlite::Error) -> Self {
-        BmosStorageError { detail: val.description().to_owned() }
+        BmosStorageError::BmosStorageSqliteError(val)
     }
 }
+
 
 impl BmosSqliteStorage {
     pub fn new() -> BmosSqliteStorage {
@@ -132,6 +137,7 @@ impl BmosSqliteStorage {
 }
 
 impl BmosStorage for BmosSqliteStorage {
+
     fn create_tables(&self) -> BmosStorageResult<()> {
 
         //No need to check this exists as the table is in memory only.
@@ -161,6 +167,18 @@ impl BmosStorage for BmosSqliteStorage {
             .unwrap();
 
         self.create_sensor_value_table();
+
+        Ok(())
+    }
+
+    fn insert_sensor_values(&self, sensor_value_array : &SensorValueArray) -> BmosStorageResult<()> {
+        // Typical slow insert (one at a time)
+        // For the postgres backend we insert multiple entries at once.
+        for entry in sensor_value_array.values.iter() {
+            self.conn
+            .execute("INSERT INTO sensor_values (ts, sensor_id, value) VALUES (?1, ?2, ?3)",
+                    &[&entry.dt, &sensor_value_array.id, &entry.value]).unwrap();
+        }
 
         Ok(())
     }
