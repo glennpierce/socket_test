@@ -1,5 +1,22 @@
+//! This module does stuff.
+//!
+//! It does this really well
+
 //TODO
 //spawn(bmos_http_server::serve);
+
+/// Bmos2
+/// Goals
+/// Make easier to install on servers
+/// -- Auto creation of db backend
+/// Make distributed
+/// -- Different sensors get forwarded to different servers
+/// -- HTTP interface speak JSON directly
+
+// Quest consolidated query different machines ?
+// bicest meters update ?
+// server hang still
+
 
 extern crate futures;
 extern crate hyper;

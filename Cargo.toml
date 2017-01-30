@@ -19,11 +19,15 @@ rustc-serialize = "0.3"
 toml = "*"
 clap = "1.2.5"
 postgres = "0.13"
-rusqlite = { git = "https://github.com/jgallagher/rusqlite.git" }
 bincode = "0.6"
 serde = "0.8"
 serde_derive = "0.8"
 systemd = "0.*"
+
+[dependencies.rusqlite]
+version = "0.9.5"
+features = ["chrono"]
+
 
 [[bin]]
 name = "bmosserver"
@@ -32,3 +36,7 @@ path = "src/main.rs"
 [[bin]]
 name = "bmosclient"
 path = "src/bmos_client.rs"
+
+[[bin]]
+name = "bmos_importer_example"
+path = "src/importers/bmos_importer_example.rs"

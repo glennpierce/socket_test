@@ -30,6 +30,7 @@ impl From<std::num::ParseIntError> for BmosTimeError {
 
 type BmosTimeConverterResult<T> = result::Result<T, BmosTimeError>;
 
+/// Converts a time string of the format 1485547437.987534 to a chronos::NaiveDateTime object
 pub trait BmosTimeConverter {
     fn from_bmos_time_string(&str) -> BmosTimeConverterResult<NaiveDateTime>;
 }
@@ -90,6 +91,7 @@ impl BmosTimeConverter for NaiveDateTime {
 
 
 #[derive(Debug, Serialize, Deserialize)]
+
 struct SensorValueArray {
     //packet_type: PacketType,
     id: i32,
@@ -97,10 +99,10 @@ struct SensorValueArray {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct SensorValue {
+pub struct SensorValue {
     #[serde(serialize_with = "dt_as_tuple", deserialize_with = "dt_from_tuple")]
-    dt: NaiveDateTime,
-    value: f64
+    pub dt: NaiveDateTime,
+    pub value: f64
 }
 
 // NaiveDateTime serializes in string representation by default; serialize it as
