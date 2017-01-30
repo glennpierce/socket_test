@@ -23,6 +23,7 @@ rusqlite = { git = "https://github.com/jgallagher/rusqlite.git" }
 bincode = "0.6"
 serde = "0.8"
 serde_derive = "0.8"
+systemd = "0.*"
 
 [[bin]]
 name = "bmosserver"

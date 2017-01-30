@@ -83,10 +83,15 @@ impl BmosTimeConverter for NaiveDateTime {
 //     // data: Option<Vec<u8>>,
 // }
 
+// #[derive(Debug, Serialize, Deserialize)]
+// enum PacketType {
+//     SENSOR_VALUES_ADD,
+// }
 
 
 #[derive(Debug, Serialize, Deserialize)]
 struct SensorValueArray {
+    //packet_type: PacketType,
     id: i32,
     values: Vec<SensorValue>
 }
@@ -187,6 +192,7 @@ fn read_u32(data: &[u8]) -> u32 {
 
 pub fn test1() {
     let array = SensorValueArray {
+        //packet_type: PacketType::SENSOR_VALUES_ADD,
         id: 0x01010101,
         values: vec![
             SensorValue {

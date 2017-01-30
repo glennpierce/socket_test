@@ -21,9 +21,12 @@ extern crate bincode;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
 
+//extern crate libc;
+extern crate systemd;
 //extern crate serde_json;
-
+use systemd::daemon;
 
 
 mod bmos_sensor;
@@ -37,6 +40,7 @@ mod bmos_storage_sqlite;
 use bmos_storage::BmosStorage;
 use std::net::SocketAddr;
 use std::thread;
+use std::collections::HashMap;
 
 use mio::*;
 use mio::tcp::*;
@@ -49,6 +53,18 @@ use clap::{Arg, App};
 
 use chrono::{NaiveDateTime, ParseResult, ParseError};
 
+
+//use std::ffi::*;
+//use ffi::daemon as ffi;
+//use libc::{c_int, size_t};
+
+//use std::os::raw::*;
+
+// pub fn notify(unset_environment: bool, state: collections::HashMap<&str, &str>) -> Result<bool> {
+//     let c_state = ffi.state_to_c_string(state).as_ptr() as *const c_char;
+//     let result = sd_try!(ffi::sd_notify(unset_environment as c_int, c_state));
+//     Ok(result != 0)
+// }
 
 fn main() {
 
