@@ -205,7 +205,6 @@ impl SensorValueArray {
 
 pub fn test1() {
     let array = SensorValueArray {
-        size: u32,
         //packet_type: PacketType::SENSOR_VALUES_ADD,
         id: 0x01010101,
         values: vec![

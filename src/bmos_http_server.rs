@@ -52,6 +52,6 @@ pub fn serve() {
     let addr = "127.0.0.1:1337".parse().unwrap();
 
     let server = Http::new().bind(&addr, || Ok(Echo)).unwrap();
-    println!("Listening on http://{}", server.local_addr().unwrap());
+    println!("Listening http server on http://{}", server.local_addr().unwrap());
     server.run().unwrap();
 }

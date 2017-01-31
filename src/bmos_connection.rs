@@ -5,6 +5,8 @@ use std::rc::Rc;
 
 use byteorder::{ByteOrder, BigEndian};
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use bincode::SizeLimit::Infinite;
+use bincode::serde::{DeserializeError, DeserializeResult};
 use bincode;
 use bmos_sensor::{SensorValueArray, SensorValue};
 
@@ -61,6 +63,7 @@ impl Connection {
     ///
     /// The recieve buffer is sent back to `Server` so the message can be broadcast to all
     /// listening connections.
+    //pub fn readable(&mut self) -> DeserializeResult<Option<Vec<u8>>> {
     pub fn readable(&mut self) -> io::Result<Option<Vec<u8>>> {
 
         // let msg_len = match try!(self.read_message_length()) {
@@ -82,79 +85,84 @@ impl Connection {
 
 
 
-        let mut recv_buf: Vec<u8> = Vec::with_capacity(msg_len);
-        unsafe {
-            recv_buf.set_len(msg_len);
-        }
+        let mut recv_buf: Vec<u8> = Vec::with_capacity(52);
+        // unsafe {
+        //     recv_buf.set_len(msg_len);
+        // }
 
         // UFCS: resolve "multiple applicable items in scope [E0034]" error
-        let sock_ref = <TcpStream as Read>::by_ref(&mut self.sock);
+       let sock_ref = <TcpStream as Read>::by_ref(&mut self.sock);
 
-        match sock_ref.take(msg_len as u64).read(&mut recv_buf) {
-            Ok(n) => {
+
+       match sock_ref.take(52 as u64).try_read_buf(&mut recv_buf) {
+            Ok(None) => {
+                debug!("CONN : read encountered WouldBlock");
+
+                Ok(None)
+            },
+            Ok(Some(n)) => {
                 debug!("CONN : we read {} bytes", n);
 
-                // if n < msg_len as usize {
-                //     return Err(Error::new(ErrorKind::InvalidData, "Did not read enough bytes"));
-                // }
-
-                // self.read_continuation = None;
-
-                let array: SensorValueArray = bincode::serde::deserialize(&recv_buf).unwrap();
-                println!("{:#?}", array);
-    
-    //         self.storage.insert_sensor_values(sensor_value_array : &SensorValueArray) -> BmosStorageResult<()>;
-
-                Ok(Some(array))
-
-                //Ok(Some(recv_buf.to_vec()))
-            }
+                Ok(Some(recv_buf))
+            },
             Err(e) => {
-
-                if e.kind() == ErrorKind::WouldBlock {
-                    debug!("CONN : read encountered WouldBlock");
-
-                    // We are being forced to try again, but we already read the two bytes off of the
-                    // wire that determined the length. We need to store the message length so we can
-                    // resume next time we get readable.
-                    self.read_continuation = Some(msg_len as u64);
-                    Ok(None)
-                } else {
-                    error!("Failed to read buffer for token {:?}, error: {}",
-                           self.token,
-                           e);
-                    Err(e)
-                }
+                error!("Failed to read buffer for token {:?}, error: {}", self.token, e);
+                Err(e)
             }
         }
+
+
+        // match bincode::serde::deserialize_from(sock_ref, Infinite) {
+        
+        //     Ok(n) => {
+        //         println!("CONN : we read {:?} bytes", n);
+
+        //         Ok(Some(n))
+        //     }
+        //     Err(DeserializeError::IoError(e)) => {
+
+        //         if e.kind() == ErrorKind::WouldBlock {
+        //             error!("CONN : read encountered WouldBlock");
+        //             Ok(None)
+        //         } else {
+        //             error!("Failed to read buffer for token {:?}, error: {}", self.token, e);
+        //             Err(DeserializeError::IoError(e))
+        //         }
+        //     }
+        //     Err(err) => {
+        //         error!("unhandled error: {}", err);
+        //         Err(err)
+        //     } 
+        // }
+
     }
 
-    fn read_message_length(&mut self) -> io::Result<Option<u64>> {
-        if let Some(n) = self.read_continuation {
-            return Ok(Some(n));
-        }
+    // fn read_message_length(&mut self) -> io::Result<Option<u64>> {
+    //     if let Some(n) = self.read_continuation {
+    //         return Ok(Some(n));
+    //     }
 
-        let mut buf = [0u8; 8];
+    //     let mut buf = [0u8; 8];
 
-        let bytes = match self.sock.read(&mut buf) {
-            Ok(n) => n,
-            Err(e) => {
-                if e.kind() == ErrorKind::WouldBlock {
-                    return Ok(None);
-                } else {
-                    return Err(e);
-                }
-            }
-        };
+    //     let bytes = match self.sock.read(&mut buf) {
+    //         Ok(n) => n,
+    //         Err(e) => {
+    //             if e.kind() == ErrorKind::WouldBlock {
+    //                 return Ok(None);
+    //             } else {
+    //                 return Err(e);
+    //             }
+    //         }
+    //     };
 
-        if bytes < 8 {
-            warn!("Found message length of {} bytes", bytes);
-            return Err(Error::new(ErrorKind::InvalidData, "Invalid message length"));
-        }
+    //     if bytes < 8 {
+    //         warn!("Found message length of {} bytes", bytes);
+    //         return Err(Error::new(ErrorKind::InvalidData, "Invalid message length"));
+    //     }
 
-        let msg_len = BigEndian::read_u64(buf.as_ref());
-        Ok(Some(msg_len))
-    }
+    //     let msg_len = BigEndian::read_u64(buf.as_ref());
+    //     Ok(Some(msg_len))
+    // }
 
     /// Handle a writable event from the poller.
     ///

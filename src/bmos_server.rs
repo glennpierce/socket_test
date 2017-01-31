@@ -12,6 +12,10 @@ use slab;
 use bmos_connection::Connection;
 use bmos_storage::BmosStorage;
 
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use bincode::SizeLimit::Infinite;
+use bincode::serde::{DeserializeError, DeserializeResult};
+
 type Slab<T> = slab::Slab<T, Token>;
 
 pub struct BmosTcpServer<'a> {
@@ -238,7 +242,7 @@ impl<'a> BmosTcpServer<'a> {
     /// Connections are identified by the token provided to us from the poller. Once a read has
     /// finished, push the receive buffer into the all the existing connections so we can
     /// broadcast.
-    fn readable(&mut self, token: Token) -> io::Result<()> {
+    fn readable(&mut self, token: Token) -> DeserializeResult<()> {
         debug!("BmosTcpserver conn readable; token={:?}", token);
 
         let c = self.find_connection_by_token(token);

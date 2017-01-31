@@ -34,6 +34,7 @@ extern crate serde_derive;
 
 mod bmos_config;
 
+use std::time;
 use bmos_config::Config;
 
 use std::io::prelude::*;
@@ -129,39 +130,42 @@ fn main() {
         let bytes = bincode::serde::serialize(&array, bincode::SizeLimit::Infinite).unwrap();
         println!("{:?}", bytes);
 
+        stream.write_all(bytes.as_ref()).unwrap();
 
+        let ten_millis = time::Duration::from_millis(1000);
+        thread::sleep(ten_millis);
 
-        let msg = format!("the answer is {}", 7);
-        let mut buf = [0u8; 8];
+        // let msg = format!("the answer is {}", 7);
+        // let mut buf = [0u8; 8];
 
-        println!("Sending over message length of {}", msg.len());
-        BigEndian::write_u64(&mut buf, msg.len() as u64);
-        stream.write_all(buf.as_ref()).unwrap();
-        stream.write_all(msg.as_ref()).unwrap();
+        // println!("Sending over message length of {}", msg.len());
+        // BigEndian::write_u64(&mut buf, msg.len() as u64);
+        // stream.write_all(buf.as_ref()).unwrap();
+        // stream.write_all(msg.as_ref()).unwrap();
 
-        let mut buf = [0u8; 8];
-        stream.read(&mut buf).unwrap();
+        //let mut buf = [0u8; 8];
+        //stream.read(&mut buf).unwrap();
 
-        let msg_len = BigEndian::read_u64(&mut buf);
-        println!("Reading message length of {}", msg_len);
+        // let msg_len = BigEndian::read_u64(&mut buf);
+        // println!("Reading message length of {}", msg_len);
 
-        let mut r = [0u8; 256];
-        let s_ref = <TcpStream as Read>::by_ref(&mut stream);
+        // let mut r = [0u8; 256];
+        // let s_ref = <TcpStream as Read>::by_ref(&mut stream);
 
-        match s_ref.take(msg_len).read(&mut r) {
-            Ok(0) => {
-                println!("0 bytes read");
-            }
-            Ok(n) => {
-                println!("{} bytes read", n);
+        // match s_ref.take(msg_len).read(&mut r) {
+        //     Ok(0) => {
+        //         println!("0 bytes read");
+        //     }
+        //     Ok(n) => {
+        //         println!("{} bytes read", n);
 
-                let s = std::str::from_utf8(&r[..]).unwrap();
-                println!("read = {}", s);
-            }
-            Err(e) => {
-                panic!("thread {}", e);
-            }
-        }
+        //         let s = std::str::from_utf8(&r[..]).unwrap();
+        //         println!("read = {}", s);
+        //     }
+        //     Err(e) => {
+        //         panic!("thread {}", e);
+        //     }
+        // }
     }
 
 }
