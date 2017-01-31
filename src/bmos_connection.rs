@@ -70,6 +70,11 @@ impl Connection {
 
         match bincode::serde::deserialize_from(sock_ref, Infinite) {
         
+            // Ok(None) => {
+            //     println!("HERE CONN : we read {:?} bytes", n);
+
+            //     Ok(Some([]))
+            // }
             Ok(n) => {
                 println!("CONN : we read {:?} bytes", n);
 

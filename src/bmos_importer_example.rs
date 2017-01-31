@@ -33,6 +33,7 @@ extern crate serde;
 extern crate serde_derive;
 
 mod bmos_config;
+use bincode::SizeLimit::Infinite;
 
 use std::time;
 use bmos_config::Config;
@@ -57,6 +58,11 @@ mod bmos_sensor;
 
 use bmos_sensor::{SensorValue, SensorValueArray};
 
+
+#[derive(Debug, Serialize, Deserialize)]
+struct S {
+    vec: Vec<String>,
+}
 
 fn main() {
 
@@ -130,7 +136,15 @@ fn main() {
         let bytes = bincode::serde::serialize(&array, bincode::SizeLimit::Infinite).unwrap();
         println!("{:?}", bytes);
 
-        stream.write_all(bytes.as_ref()).unwrap();
+        let s1 = S { vec: vec!["a".to_owned(), "b".to_owned()] };
+
+        let mut buf = Vec::new();
+        bincode::serde::serialize_into(&mut buf, &s1, Infinite).unwrap();
+        let mut buf: &[u8] = &buf;
+
+        stream.write_all(buf).unwrap();
+
+        //stream.write_all(bytes.as_ref()).unwrap();
 
         //let _ = stream.read(&mut [0; 128]); // ignore here too
 
