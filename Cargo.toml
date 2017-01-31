@@ -39,4 +39,4 @@ path = "src/bmos_client.rs"
 
 [[bin]]
 name = "bmos_importer_example"
-path = "src/importers/bmos_importer_example.rs"
+path = "src/bmos_importer_example.rs"

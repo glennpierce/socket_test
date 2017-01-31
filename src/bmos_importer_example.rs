@@ -22,10 +22,13 @@
 
 //bind_port
 
+extern crate rustc_serialize;
+extern crate toml;
 extern crate byteorder;
 extern crate clap;
+mod bmos_config;
 
-//use super::bmos_config::Config;
+use bmos_config::Config;
 
 use std::io::prelude::*;
 use std::net::TcpStream;

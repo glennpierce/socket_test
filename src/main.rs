@@ -40,6 +40,8 @@ extern crate serde;
 extern crate serde_derive;
 #[macro_use]
 
+extern crate utils;
+
 //extern crate libc;
 extern crate systemd;
 //extern crate serde_json;
