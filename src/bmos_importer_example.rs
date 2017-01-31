@@ -26,6 +26,12 @@ extern crate rustc_serialize;
 extern crate toml;
 extern crate byteorder;
 extern crate clap;
+extern crate bincode;
+extern crate chrono;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+
 mod bmos_config;
 
 use bmos_config::Config;
@@ -36,13 +42,19 @@ use std::thread;
 use std::fs;
 use std::sync::{Arc, RwLock};
 
+
+use chrono::{NaiveDateTime, ParseResult, ParseError};
+
 use byteorder::{ByteOrder, BigEndian};
 
 //static NTHREADS: i32 = 10;
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
 use clap::{Arg, App};
 
+mod bmos_sensor;
 
+use bmos_sensor::{SensorValue, SensorValueArray};
 
 
 fn main() {
@@ -96,47 +108,60 @@ fn main() {
 
     let mut stream = TcpStream::connect("127.0.0.1:8000").unwrap();
 
-    // for i in 0..NTHREADS {
+    loop {
 
-    //     let _ = thread::spawn(move || {
 
-    //         let mut stream = TcpStream::connect("127.0.0.1:8000").unwrap();
+        let array = SensorValueArray {
+            //packet_type: PacketType::SENSOR_VALUES_ADD,
+            id: 0x01010101,
+            values: vec![
+                SensorValue {
+                    dt: NaiveDateTime::from_timestamp(1485682118, 0x04040404),
+                    value: 526282.2826,
+                },
+                SensorValue {
+                    dt: NaiveDateTime::from_timestamp(1485682118, 0x07070707),
+                    value: 8262946352.6,
+                },
+            ],
+        };
 
-    //         loop {
-    //             let msg = format!("the answer is {}", i);
-    //             let mut buf = [0u8; 8];
+        let bytes = bincode::serde::serialize(&array, bincode::SizeLimit::Infinite).unwrap();
+        println!("{:?}", bytes);
 
-    //             println!("thread {}: Sending over message length of {}", i, msg.len());
-    //             BigEndian::write_u64(&mut buf, msg.len() as u64);
-    //             stream.write_all(buf.as_ref()).unwrap();
-    //             stream.write_all(msg.as_ref()).unwrap();
 
-    //             let mut buf = [0u8; 8];
-    //             stream.read(&mut buf).unwrap();
 
-    //             let msg_len = BigEndian::read_u64(&mut buf);
-    //             println!("thread {}: Reading message length of {}", i, msg_len);
+        let msg = format!("the answer is {}", 7);
+        let mut buf = [0u8; 8];
 
-    //             let mut r = [0u8; 256];
-    //             let s_ref = <TcpStream as Read>::by_ref(&mut stream);
+        println!("Sending over message length of {}", msg.len());
+        BigEndian::write_u64(&mut buf, msg.len() as u64);
+        stream.write_all(buf.as_ref()).unwrap();
+        stream.write_all(msg.as_ref()).unwrap();
 
-    //             match s_ref.take(msg_len).read(&mut r) {
-    //                 Ok(0) => {
-    //                     println!("thread {}: 0 bytes read", i);
-    //                 }
-    //                 Ok(n) => {
-    //                     println!("thread {}: {} bytes read", i, n);
+        let mut buf = [0u8; 8];
+        stream.read(&mut buf).unwrap();
 
-    //                     let s = std::str::from_utf8(&r[..]).unwrap();
-    //                     println!("thread {} read = {}", i, s);
-    //                 }
-    //                 Err(e) => {
-    //                     panic!("thread {}: {}", i, e);
-    //                 }
-    //             }
-    //         }
-    //     });
-    //}
+        let msg_len = BigEndian::read_u64(&mut buf);
+        println!("Reading message length of {}", msg_len);
 
-    //loop {}
+        let mut r = [0u8; 256];
+        let s_ref = <TcpStream as Read>::by_ref(&mut stream);
+
+        match s_ref.take(msg_len).read(&mut r) {
+            Ok(0) => {
+                println!("0 bytes read");
+            }
+            Ok(n) => {
+                println!("{} bytes read", n);
+
+                let s = std::str::from_utf8(&r[..]).unwrap();
+                println!("read = {}", s);
+            }
+            Err(e) => {
+                panic!("thread {}", e);
+            }
+        }
+    }
+
 }

@@ -4,6 +4,9 @@ use std::io::{Error, ErrorKind};
 use std::rc::Rc;
 
 use byteorder::{ByteOrder, BigEndian};
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use bincode;
+use bmos_sensor::{SensorValueArray, SensorValue};
 
 use mio::*;
 use mio::tcp::*;
@@ -60,21 +63,25 @@ impl Connection {
     /// listening connections.
     pub fn readable(&mut self) -> io::Result<Option<Vec<u8>>> {
 
-        let msg_len = match try!(self.read_message_length()) {
-            None => {
-                return Ok(None);
-            }
-            Some(n) => n,
-        };
+        // let msg_len = match try!(self.read_message_length()) {
+        //     None => {
+        //         return Ok(None);
+        //     }
+        //     Some(n) => n,
+        // };
 
-        if msg_len == 0 {
-            debug!("message is zero bytes; token={:?}", self.token);
-            return Ok(None);
-        }
+        // if msg_len == 0 {
+        //     debug!("message is zero bytes; token={:?}", self.token);
+        //     return Ok(None);
+        // }
 
-        let msg_len = msg_len as usize;
+        // let msg_len = msg_len as usize;
 
-        debug!("Expected message length is {}", msg_len);
+        // debug!("Expected message length is {}", msg_len);
+
+
+
+
         let mut recv_buf: Vec<u8> = Vec::with_capacity(msg_len);
         unsafe {
             recv_buf.set_len(msg_len);
@@ -87,13 +94,20 @@ impl Connection {
             Ok(n) => {
                 debug!("CONN : we read {} bytes", n);
 
-                if n < msg_len as usize {
-                    return Err(Error::new(ErrorKind::InvalidData, "Did not read enough bytes"));
-                }
+                // if n < msg_len as usize {
+                //     return Err(Error::new(ErrorKind::InvalidData, "Did not read enough bytes"));
+                // }
 
-                self.read_continuation = None;
+                // self.read_continuation = None;
 
-                Ok(Some(recv_buf.to_vec()))
+                let array: SensorValueArray = bincode::serde::deserialize(&recv_buf).unwrap();
+                println!("{:#?}", array);
+    
+    //         self.storage.insert_sensor_values(sensor_value_array : &SensorValueArray) -> BmosStorageResult<()>;
+
+                Ok(Some(array))
+
+                //Ok(Some(recv_buf.to_vec()))
             }
             Err(e) => {
 

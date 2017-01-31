@@ -251,7 +251,8 @@ impl<'a> BmosTcpServer<'a> {
                     error!("Failed to queue message for {:?}: {:?}", c.token, e);
                     c.mark_reset();
                 });
-
+                
+       
             // Queue up a write for all connected clients.
             // for c in self.conns.iter_mut() {
             //     c.send_message(rc_message.clone())

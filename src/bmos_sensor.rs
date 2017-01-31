@@ -9,7 +9,7 @@ use chrono::{NaiveDateTime, ParseResult, ParseError};
 use std::io::Cursor;
 use byteorder::{BigEndian, ReadBytesExt};
 
-use std::mem::transmute;
+use std::mem;
 
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use bincode;
@@ -91,11 +91,10 @@ impl BmosTimeConverter for NaiveDateTime {
 
 
 #[derive(Debug, Serialize, Deserialize)]
-
-struct SensorValueArray {
+pub struct SensorValueArray {
     //packet_type: PacketType,
-    id: i32,
-    values: Vec<SensorValue>
+    pub id: i32,
+    pub values: Vec<SensorValue>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -192,8 +191,21 @@ fn read_u32(data: &[u8]) -> u32 {
 
 */
 
+
+
+
+
+impl SensorValueArray {
+     fn get_bytes(&self) -> Vec<u8> {
+         let bytes = bincode::serde::serialize(&self, bincode::SizeLimit::Infinite).unwrap();
+         let size = mem::size_of::<SensorValueArray>();
+         bytes
+     }
+}
+
 pub fn test1() {
     let array = SensorValueArray {
+        size: u32,
         //packet_type: PacketType::SENSOR_VALUES_ADD,
         id: 0x01010101,
         values: vec![
