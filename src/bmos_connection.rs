@@ -63,77 +63,33 @@ impl Connection {
     ///
     /// The recieve buffer is sent back to `Server` so the message can be broadcast to all
     /// listening connections.
-    //pub fn readable(&mut self) -> DeserializeResult<Option<Vec<u8>>> {
-    pub fn readable(&mut self) -> io::Result<Option<Vec<u8>>> {
-
-        // let msg_len = match try!(self.read_message_length()) {
-        //     None => {
-        //         return Ok(None);
-        //     }
-        //     Some(n) => n,
-        // };
-
-        // if msg_len == 0 {
-        //     debug!("message is zero bytes; token={:?}", self.token);
-        //     return Ok(None);
-        // }
-
-        // let msg_len = msg_len as usize;
-
-        // debug!("Expected message length is {}", msg_len);
-
-
-
-
-        let mut recv_buf: Vec<u8> = Vec::with_capacity(52);
-        // unsafe {
-        //     recv_buf.set_len(msg_len);
-        // }
+    pub fn readable(&mut self) -> DeserializeResult<Option<Vec<u8>>> {
 
         // UFCS: resolve "multiple applicable items in scope [E0034]" error
        let sock_ref = <TcpStream as Read>::by_ref(&mut self.sock);
 
-
-       match sock_ref.take(52 as u64).try_read_buf(&mut recv_buf) {
-            Ok(None) => {
-                debug!("CONN : read encountered WouldBlock");
-
-                Ok(None)
-            },
-            Ok(Some(n)) => {
-                debug!("CONN : we read {} bytes", n);
-
-                Ok(Some(recv_buf))
-            },
-            Err(e) => {
-                error!("Failed to read buffer for token {:?}, error: {}", self.token, e);
-                Err(e)
-            }
-        }
-
-
-        // match bincode::serde::deserialize_from(sock_ref, Infinite) {
+        match bincode::serde::deserialize_from(sock_ref, Infinite) {
         
-        //     Ok(n) => {
-        //         println!("CONN : we read {:?} bytes", n);
+            Ok(n) => {
+                println!("CONN : we read {:?} bytes", n);
 
-        //         Ok(Some(n))
-        //     }
-        //     Err(DeserializeError::IoError(e)) => {
+                Ok(Some(n))
+            }
+            Err(DeserializeError::IoError(e)) => {
 
-        //         if e.kind() == ErrorKind::WouldBlock {
-        //             error!("CONN : read encountered WouldBlock");
-        //             Ok(None)
-        //         } else {
-        //             error!("Failed to read buffer for token {:?}, error: {}", self.token, e);
-        //             Err(DeserializeError::IoError(e))
-        //         }
-        //     }
-        //     Err(err) => {
-        //         error!("unhandled error: {}", err);
-        //         Err(err)
-        //     } 
-        // }
+                if e.kind() == ErrorKind::WouldBlock {
+                    error!("CONN : read encountered WouldBlock");
+                    Ok(None)
+                } else {
+                    error!("Failed to read buffer for token {:?}, error: {}", self.token, e);
+                    Err(DeserializeError::IoError(e))
+                }
+            }
+            Err(err) => {
+                error!("unhandled error: {}", err);
+                Err(err)
+            } 
+        }
 
     }
 

@@ -132,6 +132,8 @@ fn main() {
 
         stream.write_all(bytes.as_ref()).unwrap();
 
+        //let _ = stream.read(&mut [0; 128]); // ignore here too
+
         let ten_millis = time::Duration::from_millis(1000);
         thread::sleep(ten_millis);
 
