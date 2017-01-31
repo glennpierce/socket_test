@@ -58,24 +58,41 @@ fn main() {
                                .takes_value(true))
                           .get_matches();
 
-    let path: String = matches.value_of("config").unwrap_or("bmos.toml").parse().unwrap();
+      let config_file_name: String = matches.value_of("config").unwrap_or("bmos.toml").parse().unwrap();
+      const paths : [&'static str; 2] =  ["/etc/", "./"];
+      let mut config = None;
 
-    let fullpath = "../..".to_string() + path.to_string();
+      for item in paths.iter() {
+          let mut path = item.to_string() + &config_file_name;
 
-    //let attr = try!(fs::metadata("../..".to_string() + path));
-    //attr = try!(fs::metadata("/etc".to_string() + path));
+          config = Config::parse(&path);
 
-    // We place the deserialized Config into an Arc, so that we can share it between
-    // multiple threads in the future.  It will be immutable and not a problem to share
-    let config = Arc::new(RwLock::new(Config::parse(path)));
-    // let state = Arc::new(RwLock::new(State::new()));
-    // {
-    //     info!("Starting server \"{}\" [{}]",
-    //         &config.read().unwrap().node.name, state.read().unwrap().node_id.to_hyphenated_string());
-    // }
+          match config {
+            None => { 
+                println!("Can't read from config file {}", path); 
+                continue
+            },
+            _ => break
+          }          
+      }
+
+      if config.is_none() {
+          panic!("No configuration files found");
+      }
+
+      let config = config.unwrap();
+    
+      // We place the deserialized Config into an Arc, so that we can share it between
+      // multiple threads in the future.  It will be immutable and not a problem to share    
+      let config = Arc::new(RwLock::new(config));
+      //let state = Arc::new(RwLock::new(State::new()));
+      //{
+      //     info!("Starting server \"{}\" [{}]",
+      //         &config.read().unwrap().node.name, state.read().unwrap().node_id.to_hyphenated_string());
+      //}
 
 
-    println!("{}",path);
+   // println!("{}",path);
 
     let mut stream = TcpStream::connect("127.0.0.1:8000").unwrap();
 

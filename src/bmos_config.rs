@@ -28,19 +28,27 @@ impl Config {
     /// Attempt to load and parse the config file into our Config struct.
     /// If a file cannot be found, return a default Config.
     /// If we find a file but cannot parse it, panic
-    pub fn parse(path: String) -> Config {
+    pub fn parse(path: &String) -> Option<Config> {
         let mut config_toml = String::new();
 
         let mut file = match File::open(&path) {
             Ok(file) => file,
-            Err(_) => {
-                error!("Could not find config file, using default!");
-                return Config::new();
-            }
+            Err(_) => { return None }
+            // Err(_) => {
+            //     error!("Could not find config file, using default!");
+            //     return Config::new();
+            // }
         };
 
-        file.read_to_string(&mut config_toml)
-            .unwrap_or_else(|err| panic!("Error while reading config: [{}]", err));
+        // file.read_to_string(&mut config_toml)
+        //     .unwrap_or_else(|err| panic!("Error while reading config: [{}]", err));
+
+        match file.read_to_string(&mut config_toml) {
+             Ok(file) => {},
+             Err(_) => { return None }
+        };
+
+        //     .unwrap_or_else(|err| panic!("Error while reading config: [{}]", err));
 
         let mut parser = Parser::new(&config_toml);
         let toml = parser.parse();
@@ -62,7 +70,7 @@ impl Config {
 
         let config = Value::Table(toml.unwrap());
 
-        toml::decode(config).unwrap()
+        Some(toml::decode(config).unwrap())
     }
 }
 
