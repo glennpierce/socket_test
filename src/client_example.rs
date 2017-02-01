@@ -21,14 +21,9 @@ use byteorder::{ByteOrder, BigEndian};
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use clap::{Arg, App};
 mod sensor;
-use sensor::{SensorValue, SensorValueArray};
+use sensor::{SensorValue, SensorValueArray, TestStruct};
 
 
-#[derive(Debug, Serialize, Deserialize)]
-struct S {
-    vec: Vec<String>,
-    test: u32,
-}
 
 fn main() {
 
@@ -37,35 +32,28 @@ fn main() {
 
     loop {
 
-        let array = S { test: 456, vec: vec!["z".to_owned(), "xgst".to_owned(), "a".to_owned(), "b".to_owned(), "c".to_owned()] };
+        let array = SensorValueArray {
+            id: 565,
+            values: vec![
+                SensorValue {
+                    dt: NaiveDateTime::from_timestamp(1485682118, 353),
+                    value: 526282.2826,
+                },
+                SensorValue {
+                    dt: NaiveDateTime::from_timestamp(1485682118, 542),
+                    value: 8262946352.6,
+                },
+            ],
+        };
 
-        // let array = SensorValueArray {
-        //     id: 0x01010101,
-        //     values: vec![
-        //         SensorValue {
-        //             dt: NaiveDateTime::from_timestamp(1485682118, 0x04040404),
-        //             value: 526282.2826,
-        //         },
-        //         SensorValue {
-        //             dt: NaiveDateTime::from_timestamp(1485682118, 0x07070707),
-        //             value: 8262946352.6,
-        //         },
-        //     ],
-        // };
+        //bincode::serde::serialize_into(&mut stream, &array, Infinite);
 
-        //let bytes = bincode::serde::serialize(&array, bincode::SizeLimit::Infinite).unwrap();
-        //println!("{:?}", bytes);
+        let mut buf = Vec::new();
+        bincode::serde::serialize_into(&mut buf, &array, Infinite).unwrap();
+        println!("{:?}", buf);
+        let mut buf: &[u8] = &buf;
 
-        //
-
-        bincode::serde::serialize_into(&mut stream, &array, Infinite);
-
-        // let mut buf = Vec::new();
-        // bincode::serde::serialize_into(&mut buf, &array, Infinite).unwrap();
-        // println!("{:?}", buf);
-        // let mut buf: &[u8] = &buf;
-
-        // stream.write_all(buf).unwrap();
+        stream.write_all(buf).unwrap();
 
         //stream.write_all(bytes.as_ref()).unwrap();
         //let _ = stream.read(&mut [0; 128]); // ignore here too

@@ -11,6 +11,9 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use bincode::SizeLimit::Infinite;
 use bincode::serde::{DeserializeError, DeserializeResult};
 
+use sensor::{SensorValueArray, SensorValue, TestStruct};
+
+
 type Slab<T> = slab::Slab<T, Token>;
 
 pub struct TcpServer {
@@ -169,12 +172,14 @@ impl TcpServer {
                     return;
                 }
 
-                self.readable(token)
-                    .unwrap_or_else(|e| {
-                        warn!("Read event failed for {:?}: {:?}", token, e);
-                        println!("Read event failed for {:?}: {:?}", token, e);
-                        self.find_connection_by_token(token).mark_reset();
-                    });
+                self.readable(token);
+
+                // self.readable(token)
+                //     .unwrap_or_else(|e| {
+                //         warn!("Read event failed for {:?}: {:?}", token, e);
+                //         println!("Read event failed for {:?}: {:?}", token, e);
+                //         self.find_connection_by_token(token).mark_reset();
+                //     });
             }
         }
 
@@ -234,35 +239,27 @@ impl TcpServer {
     /// Connections are identified by the token provided to us from the poller. Once a read has
     /// finished, push the receive buffer into the all the existing connections so we can
     /// broadcast.
-    fn readable(&mut self, token: Token) -> DeserializeResult<()> {
+    fn readable(&mut self, token: Token) {
         debug!("Tcpserver conn readable; token={:?}", token);
 
         let c = self.find_connection_by_token(token);
-        while let Some(message) = try!(c.readable()) {
-
-
-
-
-            // let rc_message = Rc::new(message);
-
-            // c.send_message(rc_message.clone())
-            //     .unwrap_or_else(|e| {
-            //         error!("Failed to queue message for {:?}: {:?}", c.token, e);
-            //         c.mark_reset();
-            //     });
-                
-       
-            // Queue up a write for all connected clients.
-            // for c in self.conns.iter_mut() {
-            //     c.send_message(rc_message.clone())
-            //         .unwrap_or_else(|e| {
-            //             error!("Failed to queue message for {:?}: {:?}", c.token, e);
-            //             c.mark_reset();
-            //         });
-            // }
+        //try!(c.readable());
+        
+        match c.readable() {
+            Some(message) => {
+                println!("HERE {:?}", message);
+                //Some(message)
+            }
+            None => println!("No gift? Oh well."),
         }
 
-        Ok(())
+        // while let Some(message) = try!(c.readable()) {
+
+        // //     println!("HERE {:?}", message);
+        // }
+
+        // println!("HARLEY ");
+        //None
     }
 
     /// Find a connection in the slab using the given token.

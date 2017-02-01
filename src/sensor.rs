@@ -42,9 +42,21 @@ fn dt_as_tuple<S>(ndt: &NaiveDateTime, serializer: &mut S) -> Result<(), S::Erro
 fn dt_from_tuple<D>(deserializer: &mut D) -> Result<NaiveDateTime, D::Error>
     where D: Deserializer
 {
+    //println!("HHHHHHHH: {}", deserializer);
     let (secs, nanos) = Deserialize::deserialize(deserializer)?;
+    println!("{:?}", secs);
     Ok(NaiveDateTime::from_timestamp(secs, nanos))
 }
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TestStruct {
+    pub test: u32,
+    pub vec: Vec<String>,
+    
+}
+
+
 
 pub fn test1() {
     let array = SensorValueArray {

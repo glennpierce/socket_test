@@ -8,7 +8,7 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use bincode::SizeLimit::Infinite;
 use bincode::serde::{DeserializeError, DeserializeResult};
 use bincode;
-use sensor::{SensorValueArray, SensorValue};
+use sensor::{SensorValueArray, SensorValue, TestStruct};
 
 use mio::*;
 use mio::tcp::*;
@@ -50,7 +50,7 @@ impl Connection {
     ///
     /// The recieve buffer is sent back to `Server` so the message can be broadcast to all
     /// listening connections.
-    pub fn readable(&mut self) -> DeserializeResult<Option<Vec<u8>>> {
+    pub fn readable(&mut self) -> Option<SensorValueArray> {
 
         // UFCS: resolve "multiple applicable items in scope [E0034]" error
        let sock_ref = <TcpStream as Read>::by_ref(&mut self.sock);
@@ -60,21 +60,27 @@ impl Connection {
             Ok(n) => {
                 println!("CONN : we read {:#?} bytes", n);
 
-                Ok(Some(n))
+                Some(n)
             }
+            // Ok(None) => {
+            //     Ok(None)
+            // }
             Err(DeserializeError::IoError(e)) => {
 
                 if e.kind() == ErrorKind::WouldBlock {
                     error!("CONN : read encountered WouldBlock");
-                    Ok(None)
+                    //None
                 } else {
                     error!("Failed to read buffer for token {:?}, error: {}", self.token, e);
-                    Err(DeserializeError::IoError(e))
+                    //Err(DeserializeError::IoError(e))
                 }
+
+                None
             }
             Err(err) => {
-                error!("unhandled error: {}", err);
-                Err(err)
+                println!("unhandled error: {}", err);
+                //Err(err)
+                None
             } 
         }
 
