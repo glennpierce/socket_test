@@ -26,9 +26,8 @@ use sensor::{SensorValue, SensorValueArray};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct S {
-    
     vec: Vec<String>,
-     test: u32,
+    test: u32,
 }
 
 fn main() {
@@ -38,7 +37,7 @@ fn main() {
 
     loop {
 
-        let array = S { test: 456, vec: vec!["a".to_owned(), "b".to_owned(), "c".to_owned()] };
+        let array = S { test: 456, vec: vec!["z".to_owned(), "xgst".to_owned(), "a".to_owned(), "b".to_owned(), "c".to_owned()] };
 
         // let array = SensorValueArray {
         //     id: 0x01010101,
