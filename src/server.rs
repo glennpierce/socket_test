@@ -1,7 +1,3 @@
-//! This module does stuff.
-//!
-//! It does this really well
-
 use std::io::{self, ErrorKind};
 use std::rc::Rc;
 
@@ -73,7 +69,7 @@ impl TcpServer {
                 // not io::Result
                 let event = self.events.get(i).expect("Failed to get event");
 
-                trace!("event={:?}; idx={:?}", event, i);
+                println!("event={:?}; idx={:?}", event, i);
                 self.ready(poll, event.token(), event.kind());
 
                 i += 1;
@@ -128,7 +124,7 @@ impl TcpServer {
         debug!("{:?} event = {:?}", token, event);
 
         if event.is_error() {
-            warn!("Error event for {:?}", token);
+            println!("Error event for {:?}", token);
             self.find_connection_by_token(token).mark_reset();
             return;
         }
@@ -141,24 +137,24 @@ impl TcpServer {
 
         // We never expect a write event for our `TcpServer` token . A write event for any other token
         // should be handed off to that connection.
-        if event.is_writable() {
-            trace!("Write event for {:?}", token);
-            assert!(self.token != token,
-                    "Received writable event for TcpServer");
+        // if event.is_writable() {
+        //     trace!("Write event for {:?}", token);
+        //     assert!(self.token != token,
+        //             "Received writable event for TcpServer");
 
-            let conn = self.find_connection_by_token(token);
+        //     let conn = self.find_connection_by_token(token);
 
-            if conn.is_reset() {
-                info!("{:?} has already been reset", token);
-                return;
-            }
+        //     if conn.is_reset() {
+        //         info!("{:?} has already been reset", token);
+        //         return;
+        //     }
 
-            conn.writable()
-                .unwrap_or_else(|e| {
-                    warn!("Write event failed for {:?}, {:?}", token, e);
-                    conn.mark_reset();
-                });
-        }
+        //     conn.writable()
+        //         .unwrap_or_else(|e| {
+        //             warn!("Write event failed for {:?}, {:?}", token, e);
+        //             conn.mark_reset();
+        //         });
+        // }
 
         // A read event for our `TcpServer` token means we are establishing a new connection. A read
         // event for any other token should be handed off to that connection.
@@ -201,9 +197,9 @@ impl TcpServer {
                 Ok((sock, _)) => sock,
                 Err(e) => {
                     if e.kind() == ErrorKind::WouldBlock {
-                        debug!("accept encountered WouldBlock");
+                        println!("accept encountered WouldBlock");
                     } else {
-                        error!("Failed to accept new socket, {:?}", e);
+                        println!("Failed to accept new socket, {:?}", e);
                     }
                     return;
                 }
