@@ -117,29 +117,30 @@ fn main() {
 
     loop {
 
+        let array = S { vec: vec!["a".to_owned(), "b".to_owned()] };
 
-        let array = SensorValueArray {
-            //packet_type: PacketType::SENSOR_VALUES_ADD,
-            id: 0x01010101,
-            values: vec![
-                SensorValue {
-                    dt: NaiveDateTime::from_timestamp(1485682118, 0x04040404),
-                    value: 526282.2826,
-                },
-                SensorValue {
-                    dt: NaiveDateTime::from_timestamp(1485682118, 0x07070707),
-                    value: 8262946352.6,
-                },
-            ],
-        };
+        // let array = SensorValueArray {
+        //     id: 0x01010101,
+        //     values: vec![
+        //         SensorValue {
+        //             dt: NaiveDateTime::from_timestamp(1485682118, 0x04040404),
+        //             value: 526282.2826,
+        //         },
+        //         SensorValue {
+        //             dt: NaiveDateTime::from_timestamp(1485682118, 0x07070707),
+        //             value: 8262946352.6,
+        //         },
+        //     ],
+        // };
 
-        let bytes = bincode::serde::serialize(&array, bincode::SizeLimit::Infinite).unwrap();
-        println!("{:?}", bytes);
+        //let bytes = bincode::serde::serialize(&array, bincode::SizeLimit::Infinite).unwrap();
+        //println!("{:?}", bytes);
 
-        let s1 = S { vec: vec!["a".to_owned(), "b".to_owned()] };
+        //
 
         let mut buf = Vec::new();
-        bincode::serde::serialize_into(&mut buf, &s1, Infinite).unwrap();
+        bincode::serde::serialize_into(&mut buf, &array, Infinite).unwrap();
+        println!("{:?}", buf);
         let mut buf: &[u8] = &buf;
 
         stream.write_all(buf).unwrap();
