@@ -58,12 +58,14 @@ fn main() {
 
         //
 
-        let mut buf = Vec::new();
-        bincode::serde::serialize_into(&mut buf, &array, Infinite).unwrap();
-        println!("{:?}", buf);
-        let mut buf: &[u8] = &buf;
+        bincode::serde::serialize_into(&mut stream, &array, Infinite);
 
-        stream.write_all(buf).unwrap();
+        // let mut buf = Vec::new();
+        // bincode::serde::serialize_into(&mut buf, &array, Infinite).unwrap();
+        // println!("{:?}", buf);
+        // let mut buf: &[u8] = &buf;
+
+        // stream.write_all(buf).unwrap();
 
         //stream.write_all(bytes.as_ref()).unwrap();
         //let _ = stream.read(&mut [0; 128]); // ignore here too
