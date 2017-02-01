@@ -1,7 +1,0 @@
-[discovery]
-hosts = ["127.0.0.1:19919", "127.0.0.1:19920"]
-bind_host = "carneab4.memset.net"
-bind_port = 19919
-
-[node]
-name = "Cormorant"

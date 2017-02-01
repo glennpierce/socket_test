@@ -8,7 +8,7 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use bincode::SizeLimit::Infinite;
 use bincode::serde::{DeserializeError, DeserializeResult};
 use bincode;
-use bmos_sensor::{SensorValueArray, SensorValue};
+use sensor::{SensorValueArray, SensorValue};
 
 use mio::*;
 use mio::tcp::*;
@@ -37,7 +37,7 @@ pub struct Connection {
 
     // track whether a read received `WouldBlock` and store the number of
     // byte we are supposed to read
-    read_continuation: Option<u64>,
+    //read_continuation: Option<u64>,
 
     // track whether a write received `WouldBlock`
     write_continuation: bool,
@@ -52,7 +52,7 @@ impl Connection {
             send_queue: Vec::new(),
             is_idle: true,
             is_reset: false,
-            read_continuation: None,
+            //read_continuation: None,
             write_continuation: false,
         }
     }
@@ -76,7 +76,8 @@ impl Connection {
             //     Ok(Some([]))
             // }
             Ok(n) => {
-                println!("CONN : we read {:?} bytes", n);
+                println!("CONN : we read {:#?} bytes", n);
+//println!("{:#?}", array);
 
                 Ok(Some(n))
             }
